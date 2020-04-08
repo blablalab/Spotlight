@@ -12,6 +12,7 @@ import com.takusemba.spotlight.shape.Shape
  */
 class Target(
     val anchor: PointF,
+    val currentView: View?,
     val shape: Shape,
     val effect: Effect,
     val overlay: View?,
@@ -25,6 +26,7 @@ class Target(
   class Builder {
 
     private var anchor: PointF = DEFAULT_ANCHOR
+    private var currentView: View? = null
     private var shape: Shape = DEFAULT_SHAPE
     private var effect: Effect = DEFAULT_EFFECT
     private var overlay: View? = null
@@ -36,6 +38,7 @@ class Target(
     fun setAnchor(view: View): Builder = apply {
       val location = IntArray(2)
       view.getLocationInWindow(location)
+      currentView = view
       val x = location[0] + view.width / 2f
       val y = location[1] + view.height / 2f
       setAnchor(x, y)
@@ -85,6 +88,7 @@ class Target(
 
     fun build() = Target(
         anchor = anchor,
+        currentView = currentView,
         shape = shape,
         effect = effect,
         overlay = overlay,
