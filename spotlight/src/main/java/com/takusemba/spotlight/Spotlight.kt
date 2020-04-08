@@ -31,6 +31,9 @@ class Spotlight private constructor(
 
   init {
     container.addView(spotlight, MATCH_PARENT, MATCH_PARENT)
+    spotlight.setOnClickListener {
+      next()
+    }
   }
 
   /**
