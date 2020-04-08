@@ -13,8 +13,11 @@ import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.util.AttributeSet
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import androidx.annotation.ColorRes
 import androidx.core.content.ContextCompat
@@ -48,6 +51,8 @@ internal class SpotlightView @JvmOverloads constructor(
   init {
     setWillNotDraw(false)
     setLayerType(View.LAYER_TYPE_HARDWARE, null)
+    isClickable = true
+    isFocusable = true
   }
 
   override fun onDraw(canvas: Canvas) {
@@ -111,7 +116,40 @@ internal class SpotlightView @JvmOverloads constructor(
    */
   fun startTarget(target: Target, listener: Animator.AnimatorListener) {
     removeAllViews()
-    addView(target.overlay, MATCH_PARENT, MATCH_PARENT)
+    if (target.overlay?.parent != null) (target.overlay.parent as ViewGroup).removeView(
+        target.overlay
+    )
+
+    val infoDialogParams = LayoutParams(
+        MATCH_PARENT,
+        WRAP_CONTENT
+    )
+
+    if (target.anchor.y < height / 2) {
+      infoDialogParams.gravity = Gravity.TOP
+
+      infoDialogParams.setMargins(
+          0,
+          getRelativeTop(target.currentView!!) + context.resources.getDimension(
+              R.dimen.default_margin).toInt() + target.currentView.height,
+          0,
+          0
+      )
+    } else {
+      infoDialogParams.gravity = Gravity.BOTTOM
+      infoDialogParams.setMargins(
+          0,
+          0,
+          0,
+          (height - getRelativeTop(target.currentView!!) + context.resources.getDimension(
+              R.dimen.default_margin).toInt())
+      )
+    }
+
+    target.overlay?.layoutParams = infoDialogParams
+    target.overlay?.postInvalidate()
+    addView(target.overlay)
+
     this.target = target
     this.shapeAnimator = ofFloat(0f, 1f).apply {
       duration = target.shape.duration
@@ -146,5 +184,11 @@ internal class SpotlightView @JvmOverloads constructor(
     effectAnimator?.cancel()
     effectAnimator = null
     shapeAnimator?.start()
+  }
+
+  private fun getRelativeTop(myView: View): Int {
+    return if (myView.parent === myView.rootView) myView.top else myView.top + getRelativeTop(
+        myView.parent as View
+    )
   }
 }
